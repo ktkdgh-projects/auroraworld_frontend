@@ -142,13 +142,13 @@
 .shared {
     background-color: green;
     color: white;
-    border: none; 
+    border: none;
 }
 
 .not-shared {
-    background-color: white; 
-    color: gray; 
-    border: 2px solid gray; 
+    background-color: white;
+    color: gray;
+    border: 2px solid gray;
 }
 
 .card .card-share-button,
@@ -160,7 +160,7 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    white-space: nowrap; 
+    white-space: nowrap;
 }
 
 .card .card-share-button {
@@ -188,4 +188,10 @@
 
 .card .card-delete-button:hover {
     background-color: #c82333;
+}
+
+.web-link-image {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
 }

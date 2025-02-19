@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import LoginModal from '@/components/loginModal';
 import CreateWebLinkModal from '@/components/createWebLinkModal';
+import DeleteWebLinkModal from '@/components/deleteWebLinkModal';
+import LoginModal from '@/components/loginModal';
 import { logout } from '@/api';
 import '@/styles/weblink.css';
 
@@ -13,7 +14,7 @@ interface WebLink {
     url: string;
     category: string;
     isShared: boolean;
-    imageUrl?: string; // 이미지 URL 추가
+    imageUrl?: string;
 }
 
 const categoryMap: { [key: string]: string } = {
@@ -29,8 +30,10 @@ const WebLinkPage = () => {
     const [webLinks, setWebLinks] = useState<WebLink[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
-    const [showModal, setShowModal] = useState(false); // 로그인 모달 상태
-    const [showCreateModal, setShowCreateModal] = useState(false); // 생성 모달 상태
+    const [showModal, setShowModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false); 
+    const [deleteLinkId, setDeleteLinkId] = useState<number | null>(null); 
 
     const router = useRouter();
 
@@ -46,7 +49,7 @@ const WebLinkPage = () => {
                     url: `https://www.naver.com/`,
                     category: ['favorites', 'work', 'reference', 'education', 'shared'][index % 5],
                     isShared: index % 2 === 0,
-                    imageUrl: `https://via.placeholder.com/150?text=Image+${index + 1}`, // 임시 이미지 URL 추가
+                    imageUrl: `https://s.pstatic.net/static/www/mobile/edit/2016/0705/mobile_212852414260.png`,
                 }));
                 setWebLinks(mockData);
             } else {
@@ -66,18 +69,16 @@ const WebLinkPage = () => {
     };
 
     const handleShare = (id: number) => {
-        // 공유 처리 함수 구현
         console.log(`Sharing web link with id: ${id}`);
     };
 
     const handleEdit = (id: number) => {
-        // 수정 처리 함수 구현
         console.log(`Editing web link with id: ${id}`);
     };
 
     const handleDelete = (id: number) => {
-        // 삭제 처리 함수 구현
-        console.log(`Deleting web link with id: ${id}`);
+        setDeleteLinkId(id);
+        setShowDeleteModal(true);
     };
 
     if (isAuthChecked === false && showModal) {
@@ -120,6 +121,7 @@ const WebLinkPage = () => {
                     </button>
                 ))}
             </div>
+
             <main className="main">
                 {webLinks.map((link) => (
                     <div key={link.id} className="card">
@@ -128,7 +130,7 @@ const WebLinkPage = () => {
                                 src={link.imageUrl}
                                 alt={link.title}
                                 className="web-link-image"
-                                onClick={() => window.open(link.url, '_blank')} 
+                                onClick={() => window.open(link.url, '_blank')}
                             />
                         </div>
 
@@ -154,8 +156,8 @@ const WebLinkPage = () => {
                     </div>
                 ))}
             </main>
-
             {showCreateModal && <CreateWebLinkModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />}
+            <DeleteWebLinkModal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} linkId={deleteLinkId} />
         </div>
     );
 };
