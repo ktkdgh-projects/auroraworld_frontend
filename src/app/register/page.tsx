@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { register, checkUsername } from '../../api/index';
-import '../../styles/register.css';
-import '../../styles/modal.css';
+import { register, checkUsername } from '@/api';
+import '@/styles/register.css';
+import '@/styles/modal/registerModal.css';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -15,6 +15,13 @@ const RegisterPage = () => {
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    useEffect(() => {
+        const isLoggedIn = !!localStorage.getItem('accessToken');
+        if (isLoggedIn) {
+            window.location.href = '/weblink';
+        }
+    }, []);
+
     const validatePassword = (password: string) => {
         const isValid = password.length >= 8;
         setIsPasswordValid(isValid);
@@ -25,33 +32,32 @@ const RegisterPage = () => {
         validatePassword(password);
     }, [password]);
 
-    const validateUsername = (username: string) => {
-        if (username.length >= 5) {
-            const isValid = /^[a-zA-Z0-9]{5,}$/.test(username);
+    useEffect(() => {
+        const validateAndCheckUsername = async (username: string) => {
+            if (username.length < 5) {
+                setIsUsernameValid(false);
+                setUsernameError('아이디는 5자 이상의 영문자와 숫자만 조합할 수 있습니다.');
+                return;
+            }
+
+            const isValid = /^(?=[a-zA-Z0-9]{5,}$)([a-zA-Z]+|(?=.*[a-zA-Z])(?=.*[0-9]))/.test(username);
+
             setIsUsernameValid(isValid);
             setUsernameError(isValid ? '사용 가능한 아이디입니다.' : '아이디는 5자 이상의 영문자와 숫자만 조합할 수 있습니다.');
-            return isValid;
-        } else {
-            setUsernameError('아이디는 5자 이상의 영문자와 숫자만 조합할 수 있습니다.');
-            setIsUsernameValid(false);
-            return false;
-        }
-    };
 
-    useEffect(() => {
-        if (validateUsername(username)) {
-            const checkUsernameAvailability = async () => {
-                try {
-                    await checkUsername({ username });
-                    setUsernameError('사용 가능한 아이디입니다.');
-                } catch (err) {
-                    console.error('아이디 중복 체크 실패:', err);
-                    setUsernameError('이미 사용 중인 아이디입니다.');
-                    setIsUsernameValid(false);
-                }
-            };
-            checkUsernameAvailability();
-        }
+            if (!isValid) return;
+
+            try {
+                await checkUsername({ username });
+                setUsernameError('사용 가능한 아이디입니다.');
+            } catch (err) {
+                console.error('아이디 중복 체크 실패:', err);
+                setUsernameError('이미 사용 중인 아이디입니다.');
+                setIsUsernameValid(false);
+            }
+        };
+
+        validateAndCheckUsername(username);
     }, [username]);
 
     const isFormValid = isUsernameValid && isPasswordValid;
@@ -113,7 +119,7 @@ const RegisterPage = () => {
 
                     {error && <div className="error-message">{error}</div>}
 
-                    <button type="submit" disabled={!isFormValid}>
+                    <button type="submit" className={isFormValid ? 'active-button' : 'disabled-button'} disabled={!isFormValid}>
                         가입하기
                     </button>
                 </form>

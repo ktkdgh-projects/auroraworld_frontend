@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { login } from '../api/index';
-import '../styles/login.css';
+import { useState, useEffect } from 'react';
+import { login } from '@/api/index';
+import '@/styles/login.css';
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const isLoggedIn = !!localStorage.getItem('accessToken');
+        if (isLoggedIn) {
+            window.location.href = '/weblink';
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
