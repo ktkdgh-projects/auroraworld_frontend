@@ -14,7 +14,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     return (
         <div className="modal-overlay">
             <div className="modal">
-                <p>로그인 시 이용 가능합니다.</p>
+                <p>로그인 후 이용 가능합니다.</p>
                 <button className="close-button" onClick={onClose}>
                     닫기
                 </button>

@@ -3,8 +3,12 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
 }
-
 .header {
     width: 100%;
     display: flex;
@@ -72,6 +76,12 @@
     border-radius: 20px;
     cursor: pointer;
     font-size: 14px;
+}
+
+.categoryButton.selected {
+    background-color: #007bff; /* 선택된 카테고리 배경 */
+    color: white; /* 선택된 카테고리 텍스트 색 */
+    font-weight: bold; /* 선택된 카테고리 강조 */
 }
 
 .categoryButton:hover {
@@ -152,7 +162,7 @@
 }
 
 .card .card-share-button,
-.card .card-edit-button,
+.card .card-update-button,
 .card .card-delete-button {
     padding: 6px 12px;
     font-size: 12px;
@@ -168,7 +178,7 @@
     color: white;
 }
 
-.card .card-edit-button {
+.card .card-update-button {
     background-color: #ffc107;
     color: white;
 }
@@ -182,7 +192,7 @@
     background-color: #0056b3;
 }
 
-.card .card-edit-button:hover {
+.card .card-update-button:hover {
     background-color: #e0a800;
 }
 
@@ -191,7 +201,32 @@
 }
 
 .web-link-image {
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 24px;
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40vh; /* 화면 높이를 100%로 설정 */
+    font-size: 24px; /* 글씨 크기 */
+    font-weight: bold; /* 글씨 두께 */
+    color: #777; /* 글씨 색상 */
+    text-align: center; /* 텍스트 중앙 정렬 */
 }

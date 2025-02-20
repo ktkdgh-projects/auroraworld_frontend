@@ -4,17 +4,30 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CreateWebLinkModal from '@/components/createWebLinkModal';
 import DeleteWebLinkModal from '@/components/deleteWebLinkModal';
+import UpdateWebLinkModal from '@/components/updateWebLinkModal';
 import LoginModal from '@/components/loginModal';
-import { logout } from '@/api';
+import { logout, getWeblink } from '@/api';
 import '@/styles/weblink.css';
+
+type Category = 'favorites' | 'work' | 'reference' | 'education';
+type getCategory = 'all' | 'favorites' | 'work' | 'reference' | 'education' | 'shared';
 
 interface WebLink {
     id: number;
-    title: string;
+    name: string;
     url: string;
-    category: string;
+    category: Category;
     isShared: boolean;
     imageUrl?: string;
+    canDelete: boolean;
+    canEdit: boolean;
+}
+
+interface updateLinkData {
+    weblink_id: number;
+    name: string;
+    url: string;
+    category: Category;
 }
 
 const categoryMap: { [key: string]: string } = {
@@ -32,32 +45,66 @@ const WebLinkPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [showModal, setShowModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false); 
-    const [deleteLinkId, setDeleteLinkId] = useState<number | null>(null); 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteLinkId, setDeleteLinkId] = useState<number | null>(null);
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [updateLinkData, setUpdateLinkData] = useState<updateLinkData | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const router = useRouter();
 
+    const fetchWebLinks = async (category: getCategory = 'all', keyword: string = '') => {
+        try {
+            const response = await getWeblink(category, keyword);
+
+            if (response && Array.isArray(response.data)) {
+                const formattedData: WebLink[] = response.data.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    url: item.url,
+                    category: item.category as Category,
+                    isShared: item.shared,
+                    imageUrl: item.image_url,
+                    canDelete: item.can_delete,
+                    canEdit: item.can_edit,
+                }));
+                setWebLinks(formattedData);
+            }
+        } catch (error) {
+            console.error('웹링크 데이터를 불러오는 중 오류 발생:', error);
+        }
+    };
+
     useEffect(() => {
-        const checkAuth = async () => {
+        const checkAuthAndFetchLinks = async () => {
             const isLoggedIn = !!localStorage.getItem('accessToken');
             setIsAuthChecked(isLoggedIn);
 
             if (isLoggedIn) {
-                const mockData: WebLink[] = Array.from({ length: 20 }, (_, index) => ({
-                    id: index + 1,
-                    title: `WebLink Title ${index + 1}`,
-                    url: `https://www.naver.com/`,
-                    category: ['favorites', 'work', 'reference', 'education', 'shared'][index % 5],
-                    isShared: index % 2 === 0,
-                    imageUrl: `https://s.pstatic.net/static/www/mobile/edit/2016/0705/mobile_212852414260.png`,
-                }));
-                setWebLinks(mockData);
+                setIsLoading(true);
+                try {
+                    await fetchWebLinks();
+                } catch (error) {
+                    console.error('웹링크 데이터를 불러오는 중 오류 발생:', error);
+                } finally {
+                    setIsLoading(false);
+                }
             } else {
                 setShowModal(true);
+                setIsLoading(false);
             }
         };
-        checkAuth();
+
+        checkAuthAndFetchLinks();
     }, []);
+
+    if (isLoading) {
+        return (
+            <div className="loading-container">
+                <p>로딩 중...</p>
+            </div>
+        );
+    }
 
     const handleLogout = async () => {
         await logout();
@@ -72,13 +119,29 @@ const WebLinkPage = () => {
         console.log(`Sharing web link with id: ${id}`);
     };
 
-    const handleEdit = (id: number) => {
-        console.log(`Editing web link with id: ${id}`);
+    const handleUpdate = (data: updateLinkData) => {
+        setUpdateLinkData(data);
+        setShowUpdateModal(true);
     };
 
     const handleDelete = (id: number) => {
         setDeleteLinkId(id);
         setShowDeleteModal(true);
+    };
+
+    const handleSearchAndCategoryChange = async (keyword: string, category: getCategory) => {
+        await fetchWebLinks(category, keyword);
+    };
+
+    const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearchAndCategoryChange(searchQuery, selectedCategory as getCategory);
+        }
+    };
+
+    const handleCategoryClick = (category: getCategory) => {
+        setSelectedCategory(category);
+        handleSearchAndCategoryChange(searchQuery, category);
     };
 
     if (isAuthChecked === false && showModal) {
@@ -103,61 +166,91 @@ const WebLinkPage = () => {
                     로그아웃
                 </button>
             </header>
-
             <div className="searchContainer">
                 <input
                     type="text"
                     placeholder="웹링크 검색"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearch}
                     className="searchInput"
                 />
             </div>
 
             <div className="categoryButtons">
                 {['all', 'favorites', 'work', 'reference', 'education', 'shared'].map((category) => (
-                    <button key={category} onClick={() => setSelectedCategory(category)} className="categoryButton">
+                    <button
+                        key={category}
+                        onClick={() => handleCategoryClick(category as getCategory)}
+                        className={`categoryButton ${selectedCategory === category ? 'selected' : ''}`}
+                    >
                         {category === 'all' ? '전체' : categoryMap[category]}
                     </button>
                 ))}
             </div>
-
-            <main className="main">
-                {webLinks.map((link) => (
-                    <div key={link.id} className="card">
-                        <div className="image-container">
-                            <img
-                                src={link.imageUrl}
-                                alt={link.title}
-                                className="web-link-image"
-                                onClick={() => window.open(link.url, '_blank')}
-                            />
-                        </div>
-
-                        <div className="link-info">
-                            <div className="title-category">
-                                <h3>{link.title}</h3>
-                                <p className="category">{categoryMap[link.category]}</p>
+            {webLinks.length > 0 ? (
+                <main className="main">
+                    {webLinks.map((link) => (
+                        <div key={link.id} className="card">
+                            <div className="image-container">
+                                <img
+                                    src={link.imageUrl || '/favicon.ico'}
+                                    alt={link.name}
+                                    className="web-link-image"
+                                    onClick={() => window.open(link.url, '_blank')}
+                                />
                             </div>
-
-                            <div className="button-group">
-                                <span className={`shared-badge ${link.isShared ? 'shared' : 'not-shared'}`}>공유</span>
-                                <button className="card-share-button" onClick={() => handleShare(link.id)}>
-                                    공유
-                                </button>
-                                <button className="card-edit-button" onClick={() => handleEdit(link.id)}>
-                                    수정
-                                </button>
-                                <button className="card-delete-button" onClick={() => handleDelete(link.id)}>
-                                    삭제
-                                </button>
+                            <div className="link-info">
+                                <div className="title-category">
+                                    <h3>{link.name}</h3>
+                                    <p className="category">{categoryMap[link.category]}</p>
+                                </div>
+                                <div className="button-group">
+                                    <span className={`shared-badge ${link.isShared ? 'shared' : 'not-shared'}`}>공유</span>
+                                    {link.canDelete && (
+                                        <button className="card-share-button" onClick={() => handleShare(link.id)}>
+                                            공유
+                                        </button>
+                                    )}
+                                    {link.canEdit && (
+                                        <button
+                                            className="card-update-button"
+                                            onClick={() =>
+                                                handleUpdate({
+                                                    weblink_id: link.id,
+                                                    name: link.name,
+                                                    url: link.url,
+                                                    category: link.category,
+                                                })
+                                            }
+                                        >
+                                            수정
+                                        </button>
+                                    )}
+                                    {link.canDelete && (
+                                        <button className="card-delete-button" onClick={() => handleDelete(link.id)}>
+                                            삭제
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </main>
+                    ))}
+                </main>
+            ) : (
+                <div className="no-data">
+                    <p>웹링크가 없습니다. 새로운 링크를 추가해보세요!</p>
+                </div>
+            )}
             {showCreateModal && <CreateWebLinkModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />}
             <DeleteWebLinkModal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} linkId={deleteLinkId} />
+            {showUpdateModal && updateLinkData && (
+                <UpdateWebLinkModal
+                    isOpen={showUpdateModal}
+                    onClose={() => setShowUpdateModal(false)}
+                    linkData={updateLinkData}
+                />
+            )}
         </div>
     );
 };

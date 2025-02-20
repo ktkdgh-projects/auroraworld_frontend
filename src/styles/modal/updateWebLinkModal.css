@@ -101,7 +101,7 @@
     width: 100%;
 }
 
-.create-button,
+.update-button,
 .cancel-button {
     padding: 10px 20px;
     border: none;
@@ -111,13 +111,13 @@
     transition: background-color 0.3s ease;
 }
 
-.create-button {
-    background-color: #28a745;
+.update-button {
+    background-color: #007bff;
     color: white;
 }
 
-.create-button:hover {
-    background-color: #218838;
+.update-button:hover {
+    background-color: #0056b3;
 }
 
 .cancel-button {

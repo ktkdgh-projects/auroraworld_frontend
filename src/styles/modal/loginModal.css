@@ -11,7 +11,7 @@
 }
 
 .modal {
-    width: 40%;
+    width: 20%;
     height: 15%;
     background: white;
     padding: 20px;
@@ -20,7 +20,8 @@
 }
 
 .close-button {
-    width: 40%;
+    width: 35%;
+    height: 45%;
     margin-top: 30px;
     padding: 5px 10px;
     border: none;
