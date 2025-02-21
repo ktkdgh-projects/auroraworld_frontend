@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import CreateWebLinkModal from '@/components/createWebLinkModal';
 import DeleteWebLinkModal from '@/components/deleteWebLinkModal';
 import UpdateWebLinkModal from '@/components/updateWebLinkModal';
+import ShareModal from '@/components/shareModal';
 import LoginModal from '@/components/loginModal';
 import { logout, getWeblink } from '@/api';
 import '@/styles/weblink.css';
@@ -30,6 +31,11 @@ interface updateLinkData {
     category: Category;
 }
 
+interface shareData {
+    weblink_id: number;
+    shared: boolean;
+}
+
 const categoryMap: { [key: string]: string } = {
     favorites: '개인즐겨찾기',
     work: '업무 활용자료',
@@ -50,6 +56,8 @@ const WebLinkPage = () => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [updateLinkData, setUpdateLinkData] = useState<updateLinkData | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareData, setShareData] = useState<shareData | null>(null);
 
     const router = useRouter();
 
@@ -115,8 +123,9 @@ const WebLinkPage = () => {
         setShowCreateModal(true);
     };
 
-    const handleShare = (id: number) => {
-        console.log(`Sharing web link with id: ${id}`);
+    const handleShare = (shareData: shareData) => {
+        setShareData(shareData);
+        setShowShareModal(true);
     };
 
     const handleUpdate = (data: updateLinkData) => {
@@ -208,7 +217,12 @@ const WebLinkPage = () => {
                                 <div className="button-group">
                                     <span className={`shared-badge ${link.isShared ? 'shared' : 'not-shared'}`}>공유</span>
                                     {link.canDelete && (
-                                        <button className="card-share-button" onClick={() => handleShare(link.id)}>
+                                        <button
+                                            className="card-share-button"
+                                            onClick={() => {
+                                                handleShare({ weblink_id: link.id, shared: link.isShared });
+                                            }}
+                                        >
                                             공유
                                         </button>
                                     )}
@@ -249,6 +263,13 @@ const WebLinkPage = () => {
                     isOpen={showUpdateModal}
                     onClose={() => setShowUpdateModal(false)}
                     linkData={updateLinkData}
+                />
+            )}
+            {showShareModal && shareData && (
+                <ShareModal
+                    isOpen={showShareModal}
+                    onClose={() => setShowShareModal(false)} // 모달 닫기
+                    shareData={shareData} // 공유할 링크 id 전달
                 />
             )}
         </div>

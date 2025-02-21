@@ -27,6 +27,10 @@
     width: 100%;
 }
 
+.user-list {
+    margin-top: 5%;
+}
+
 .input-field {
     width: 100%;
     padding: 10px;

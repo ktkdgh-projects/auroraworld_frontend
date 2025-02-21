@@ -79,9 +79,9 @@
 }
 
 .categoryButton.selected {
-    background-color: #007bff; /* 선택된 카테고리 배경 */
-    color: white; /* 선택된 카테고리 텍스트 색 */
-    font-weight: bold; /* 선택된 카테고리 강조 */
+    background-color: #007bff; 
+    color: white; 
+    font-weight: bold; 
 }
 
 .categoryButton:hover {
@@ -224,9 +224,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 40vh; /* 화면 높이를 100%로 설정 */
-    font-size: 24px; /* 글씨 크기 */
-    font-weight: bold; /* 글씨 두께 */
-    color: #777; /* 글씨 색상 */
-    text-align: center; /* 텍스트 중앙 정렬 */
+    height: 40vh; 
+    font-size: 24px;
+    font-weight: bold; 
+    color: #777; 
+    text-align: center; 
 }
